@@ -1,9 +1,10 @@
+//Requirements
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
 
 
-
+//Establishes connection to database
 const connection = mysql.createConnection({
     host: 'localhost',
     port: 3306,
@@ -12,6 +13,8 @@ const connection = mysql.createConnection({
     database: 'tracker_DB',
 });
 
+
+//Start Function that branches off depending where user selects
 const start = () => {
     inquirer
         .prompt({
@@ -40,6 +43,7 @@ const start = () => {
 
 //---------Start of Add Section -------------------------
 
+//Starting add function that branches off
 const addFunction = () => {
     inquirer
         .prompt({
@@ -58,6 +62,7 @@ const addFunction = () => {
         });
 };
 
+//Function to add a department
 const addDepartment = () => {
     inquirer
         .prompt({
@@ -83,12 +88,13 @@ const addDepartment = () => {
         });
 };
 
+//Function to add a role
 const addRole = () => {
     connection.query('SELECT * FROM department', (err, results) => {
         if (err) throw err;
         const allDepartments = results.map((department) => {
             return { name: department.department_name, value: department.id };
-        }); 
+        });
         inquirer
             .prompt([
                 {
@@ -130,6 +136,7 @@ const addRole = () => {
     });
 };
 
+//Function to add an employee
 const addEmployee = () => {
     inquirer
         .prompt([
@@ -180,6 +187,7 @@ const addEmployee = () => {
 // END Adding Section --------------------------------------------
 
 // Start View section -------------------------------------
+//Starting view function that branches off
 const viewFunction = () => {
     inquirer
         .prompt({
@@ -198,6 +206,7 @@ const viewFunction = () => {
         });
 };
 
+//Function to view department table
 const viewDepartments = () => {
     connection.query('Select * FROM department', (err, res) => {
         if (err) throw err;
@@ -206,6 +215,7 @@ const viewDepartments = () => {
     });
 };
 
+//Function to view role table
 const viewRoles = () => {
     connection.query('SELECT * FROM role', (err, res) => {
         if (err) throw err;
@@ -214,6 +224,7 @@ const viewRoles = () => {
     });
 };
 
+//Function to view all employees
 const viewEmployees = () => {
     connection.query(`SELECT first_name, last_name, manager_id, title, salary, name AS department
     FROM employee INNER JOIN role ON employee.role_id = role.id
@@ -229,6 +240,7 @@ const viewEmployees = () => {
 
 // START Update section
 
+//Function to update an employee's role
 const updateRole = () => {
     connection.query(`SELECT * FROM employee`, (err, res) => {
         if (err) throw err;
@@ -248,10 +260,10 @@ const updateRole = () => {
             inquirer
                 .prompt([
                     {
-                    name: 'updateRole',
-                    type: 'list',
-                    message: "What employee do you want to update?",
-                    choices: allEmployees,
+                        name: 'updateRole',
+                        type: 'list',
+                        message: "What employee do you want to update?",
+                        choices: allEmployees,
                     },
                     {
                         name: 'newRole',
@@ -263,16 +275,15 @@ const updateRole = () => {
                     connection.query(`UPDATE employee SET ? WHERE ?`,
                         [
                             {
-                                role_id: answer.role,
+                                role_id: answer.newRole,
                             },
                             {
                                 id: answer.updateRole,
                             },
                         ],
-                        (err, res) => {
+                        (err) => {
                             if (err) throw err;
                             console.log("The role has been updated");
-
                             start();
                         }
                     );
@@ -280,11 +291,11 @@ const updateRole = () => {
         });
 
     });
-}
-
+};
 
 // END Update section
 
+//Establishes connection and begins the start function
 connection.connect((err) => {
     if (err) throw err;
     console.log(`connected as id ${connection.threadId}`);
